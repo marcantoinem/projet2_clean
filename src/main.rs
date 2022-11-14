@@ -23,7 +23,7 @@ impl State {
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let fps_limit = FpsLimit::new(240).sleep(true);
+    let fps_limit = FpsLimit::new(60).sleep(true);
 
     let windows = WindowConfig::new()
         .title("TP2 next generation")
@@ -90,6 +90,6 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     state
         .tank
         .update_molecules_number(left_molecules, right_molecules);
-    state.tank.wall = 0.95 * state.tank.wall + 0.05 * wall_position;
+    state.tank.wall = 0.9 * state.tank.wall + 0.1 * wall_position;
     state.wall = wall_position;
 }

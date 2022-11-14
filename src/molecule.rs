@@ -57,8 +57,8 @@ impl Molecule {
         let mut vec_molecules = vec![];
         let mut rng = thread_rng();
         let radius_distribution = Uniform::from(5f32..10f32);
-        let dx_distribution = Uniform::from(-1f32..1f32);
-        let dy_distribution = Uniform::from(-1f32..1f32);
+        let dx_distribution = Uniform::from(-4f32..4f32);
+        let dy_distribution = Uniform::from(-4f32..4f32);
 
         for _ in 0..nb_molecules {
             let radius = radius_distribution.sample(&mut rng);

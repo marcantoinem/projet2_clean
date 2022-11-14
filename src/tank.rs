@@ -121,16 +121,24 @@ impl Tank {
     pub fn render(&self, gfx: &mut Graphics, draw: &mut Draw) {
         draw.clear(Color::WHITE);
 
-        for mol in &self.left_molecules {
+        for (i, mol) in self.left_molecules.iter().enumerate() {
             draw.circle(mol.radius)
                 .position(mol.x, mol.y)
-                .color(Color::BLACK);
+                .color(Color::from_rgb(
+                    1.0,
+                    i as f32 / (self.left_molecules.len() + 1000) as f32,
+                    i as f32 / (self.left_molecules.len() + 1000) as f32,
+                ));
         }
 
-        for mol in &self.right_molecules {
+        for (i, mol) in self.right_molecules.iter().enumerate() {
             draw.circle(mol.radius)
                 .position(mol.x, mol.y)
-                .color(Color::BLACK);
+                .color(Color::from_rgb(
+                    i as f32 / (self.right_molecules.len() + 1000) as f32,
+                    i as f32 / (self.right_molecules.len() + 1000) as f32,
+                    1.0,
+                ));
         }
 
         draw.line((self.wall, 0f32), (self.wall, self.height))
