@@ -40,7 +40,7 @@ impl Tank {
                 let contact = mol_1.is_molecules_touching(mol_2);
                 if contact && self.left_collisions[k] == 0 {
                     mol_1.adjust_dir_after_collision(mol_2);
-                    self.left_collisions[k] = 5;
+                    self.left_collisions[k] = 2;
                 } else if !contact && self.left_collisions[k] > 0 {
                     self.left_collisions[k] -= 1;
                 }
@@ -78,7 +78,7 @@ impl Tank {
         let difference = new_left as isize - self.left_molecules.len() as isize;
         if difference > 0 {
             let new_molecules =
-                Molecule::create_vec_molecules(self.height, 0.0, self.width, difference as usize);
+                Molecule::create_vec_molecules(self.height, 0.0, self.wall, difference as usize);
             self.left_molecules.extend(new_molecules);
             self.left_collisions =
                 vec![0; self.left_molecules.len() * (self.left_molecules.len() - 1) / 2];
@@ -92,8 +92,12 @@ impl Tank {
 
         let difference = new_right as isize - self.right_molecules.len() as isize;
         if difference > 0 {
-            let new_molecules =
-                Molecule::create_vec_molecules(self.height, 0.0, self.width, difference as usize);
+            let new_molecules = Molecule::create_vec_molecules(
+                self.height,
+                self.wall,
+                self.width,
+                difference as usize,
+            );
             self.right_molecules.extend(new_molecules);
             self.right_collisions =
                 vec![0; self.right_molecules.len() * (self.right_molecules.len() - 1) / 2];

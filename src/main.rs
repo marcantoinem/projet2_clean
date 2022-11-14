@@ -71,11 +71,13 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     let mut left_molecules = state.tank.left_molecules.len();
     let mut right_molecules = state.tank.right_molecules.len();
 
+    let right_space = gfx.size().0 / 100 * 100 - 100;
+
     ui.label("Wall position");
     ui.add(
         Slider::new(
             &mut wall_position,
-            100.0..=((gfx.size().0 / 100 * 100 - 100) as f32),
+            (((gfx.size().0 - right_space) / 10 * 10) as f32)..=(right_space as f32),
         )
         .clamp_to_range(false)
         .step_by(1.0),
