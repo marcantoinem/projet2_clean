@@ -1,0 +1,12 @@
+[package]
+name = "projet2_clean"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rand = "0.8.5"
+notan = "0.7.1"
+notan_extra = "0.7.1"
+notan_egui = "0.7.1"

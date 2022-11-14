@@ -1,0 +1,83 @@
+mod molecule;
+mod tank;
+
+use notan::draw::*;
+use notan::prelude::*;
+use notan_egui::{self, *};
+use notan_extra::FpsLimit;
+use tank::Tank;
+
+#[derive(AppState)]
+struct State {
+    tank: Tank, // time: f32,
+}
+
+impl State {
+    fn new(gfx: &mut Graphics) -> Self {
+        let tank = Tank::new(
+            gfx.size().1 as f32,
+            gfx.size().0 as f32,
+            (gfx.size().0 / 2) as f32,
+            100,
+            200,
+        );
+        Self { tank }
+    }
+}
+
+#[notan_main]
+fn main() -> Result<(), String> {
+    let fps_limit = FpsLimit::new(60).sleep(true);
+
+    let windows = WindowConfig::new()
+        .title("TP2 next generation")
+        .resizable(true)
+        .min_size(400, 300)
+        .vsync(true)
+        .high_dpi(true);
+
+    notan::init_with(State::new)
+        .add_config(DrawConfig)
+        .add_config(windows)
+        .add_config(EguiConfig)
+        .add_plugin(fps_limit)
+        .draw(draw)
+        .build()
+}
+
+fn draw(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
+    let interface = plugins.egui(|ctx| {
+        // Draw the EGUI Widget here
+        draw_egui_widget(ctx, state, gfx);
+    });
+
+    state.tank.width = gfx.size().0 as f32;
+    state.tank.height = gfx.size().1 as f32;
+
+    // Move molecule
+    state.tank.update();
+
+    // Repaint the scene
+    let mut scene = gfx.create_draw();
+    state.tank.render(gfx, &mut scene);
+    gfx.render(&interface);
+}
+
+// Creates a widget to change the properties
+fn draw_egui_widget(ctx: &Context, state: &mut State, gfx: &mut Graphics) {
+    Window::new("Simulation parameters")
+        .default_width(400.0)
+        .show(ctx, |ui| draw_egui_ui(ui, state, gfx));
+}
+
+fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
+    let mut wall_position = state.tank.wall;
+
+    ui.label("Wall position");
+    ui.add(Slider::new(
+        &mut wall_position,
+        0.0..=(gfx.size().0 as f32 - 100.0),
+    ));
+
+    state.tank.wall = wall_position;
+}
