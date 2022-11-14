@@ -72,12 +72,23 @@ fn draw_egui_widget(ctx: &Context, state: &mut State, gfx: &mut Graphics) {
 
 fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     let mut wall_position = state.tank.wall;
+    let mut left_molecules = state.tank.left_molecules.len();
+    let mut right_molecules = state.tank.right_molecules.len();
 
     ui.label("Wall position");
     ui.add(Slider::new(
         &mut wall_position,
-        0.0..=(gfx.size().0 as f32 - 100.0),
+        100.0..=(gfx.size().0 as f32 - 100.0),
     ));
 
+    ui.label("Left molecules");
+    ui.add(Slider::new(&mut left_molecules, 1..=1000));
+
+    ui.label("Right molecules");
+    ui.add(Slider::new(&mut right_molecules, 1..=1000));
+
+    state
+        .tank
+        .update_molecules_number(left_molecules, right_molecules);
     state.tank.wall = wall_position;
 }

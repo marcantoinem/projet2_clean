@@ -7,10 +7,10 @@ pub struct Tank {
     pub height: f32,
     pub width: f32,
     pub wall: f32,
-    left_molecules: Vec<Molecule>,
-    right_molecules: Vec<Molecule>,
-    left_collisions: Vec<u8>,
-    right_collisions: Vec<u8>,
+    pub left_molecules: Vec<Molecule>,
+    pub right_molecules: Vec<Molecule>,
+    pub left_collisions: Vec<u8>,
+    pub right_collisions: Vec<u8>,
 }
 
 impl Tank {
@@ -71,6 +71,38 @@ impl Tank {
         }
         for mol in self.right_molecules.iter_mut() {
             mol.inverse_dir(self.wall, self.width, self.height);
+        }
+    }
+
+    pub fn update_molecules_number(&mut self, new_left: usize, new_right: usize) {
+        let difference = new_left as isize - self.left_molecules.len() as isize;
+        if difference > 0 {
+            let new_molecules =
+                Molecule::create_vec_molecules(self.height, 0.0, self.width, difference as usize);
+            self.left_molecules.extend(new_molecules);
+            self.left_collisions =
+                vec![0; self.left_molecules.len() * (self.left_molecules.len() - 1) / 2];
+        } else if difference < 0 {
+            for _ in 0..(-difference as usize) {
+                self.left_molecules.pop();
+            }
+            self.left_collisions =
+                vec![0; self.left_molecules.len() * (self.left_molecules.len() - 1) / 2];
+        }
+
+        let difference = new_right as isize - self.right_molecules.len() as isize;
+        if difference > 0 {
+            let new_molecules =
+                Molecule::create_vec_molecules(self.height, 0.0, self.width, difference as usize);
+            self.right_molecules.extend(new_molecules);
+            self.right_collisions =
+                vec![0; self.right_molecules.len() * (self.right_molecules.len() - 1) / 2];
+        } else if difference < 0 {
+            for _ in 0..(-difference as usize) {
+                self.right_molecules.pop();
+            }
+            self.right_collisions =
+                vec![0; self.right_molecules.len() * (self.right_molecules.len() - 1) / 2];
         }
     }
 

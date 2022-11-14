@@ -1,6 +1,6 @@
 use rand::{distributions::Uniform, prelude::Distribution, thread_rng, Rng};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Copy, Clone)]
 pub struct Molecule {
     pub x: f32,
     pub y: f32,
