@@ -31,7 +31,7 @@ impl Molecule {
         self.y += self.dy;
     }
 
-    pub fn ajust_dir_after_collision(&mut self, mol: &mut Molecule) {
+    pub fn adjust_dir_after_collision(&mut self, mol: &mut Molecule) {
         let delta_x = mol.x - self.x;
         let mut delta_vx = 0.0;
 
@@ -57,8 +57,8 @@ impl Molecule {
         let mut vec_molecules = vec![];
         let mut rng = thread_rng();
         let radius_distribution = Uniform::from(5f32..10f32);
-        let dx_distribution = Uniform::from(-3f32..3f32);
-        let dy_distribution = Uniform::from(-3f32..3f32);
+        let dx_distribution = Uniform::from(-1f32..1f32);
+        let dy_distribution = Uniform::from(-1f32..1f32);
 
         for _ in 0..nb_molecules {
             let radius = radius_distribution.sample(&mut rng);

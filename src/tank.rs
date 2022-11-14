@@ -39,7 +39,7 @@ impl Tank {
                 let mol_2 = iter_mut.nth(j - i - 1).unwrap();
                 let contact = mol_1.is_molecules_touching(mol_2);
                 if contact && self.left_collisions[k] == 0 {
-                    mol_1.ajust_dir_after_collision(mol_2);
+                    mol_1.adjust_dir_after_collision(mol_2);
                     self.left_collisions[k] = 5;
                 } else if !contact && self.left_collisions[k] > 0 {
                     self.left_collisions[k] -= 1;
@@ -55,7 +55,7 @@ impl Tank {
                 let mol_2 = iter_mut.nth(j - i - 1).unwrap();
                 let contact = mol_1.is_molecules_touching(mol_2);
                 if contact && self.right_collisions[k] == 0 {
-                    mol_1.ajust_dir_after_collision(mol_2);
+                    mol_1.adjust_dir_after_collision(mol_2);
                     self.right_collisions[k] = 5;
                 } else if !contact && self.right_collisions[k] > 0 {
                     self.right_collisions[k] -= 1;

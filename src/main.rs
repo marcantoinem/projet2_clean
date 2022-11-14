@@ -9,31 +9,27 @@ use tank::Tank;
 
 #[derive(AppState)]
 struct State {
-    tank: Tank, // time: f32,
+    wall: f32,
+    tank: Tank,
 }
 
 impl State {
     fn new(gfx: &mut Graphics) -> Self {
-        let tank = Tank::new(
-            gfx.size().1 as f32,
-            gfx.size().0 as f32,
-            (gfx.size().0 / 2) as f32,
-            100,
-            200,
-        );
-        Self { tank }
+        let wall = (gfx.size().0 / 2) as f32;
+        let tank = Tank::new(gfx.size().1 as f32, gfx.size().0 as f32, wall, 100, 200);
+        Self { wall, tank }
     }
 }
 
 #[notan_main]
 fn main() -> Result<(), String> {
-    let fps_limit = FpsLimit::new(60).sleep(true);
+    let fps_limit = FpsLimit::new(240).sleep(true);
 
     let windows = WindowConfig::new()
         .title("TP2 next generation")
         .resizable(true)
         .min_size(400, 300)
-        .vsync(true)
+        // .vsync(true)
         .high_dpi(true);
 
     notan::init_with(State::new)
@@ -71,15 +67,19 @@ fn draw_egui_widget(ctx: &Context, state: &mut State, gfx: &mut Graphics) {
 }
 
 fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
-    let mut wall_position = state.tank.wall;
+    let mut wall_position = state.wall;
     let mut left_molecules = state.tank.left_molecules.len();
     let mut right_molecules = state.tank.right_molecules.len();
 
     ui.label("Wall position");
-    ui.add(Slider::new(
-        &mut wall_position,
-        100.0..=(gfx.size().0 as f32 - 100.0),
-    ));
+    ui.add(
+        Slider::new(
+            &mut wall_position,
+            100.0..=((gfx.size().0 / 100 * 100 - 100) as f32),
+        )
+        .clamp_to_range(false)
+        .step_by(1.0),
+    );
 
     ui.label("Left molecules");
     ui.add(Slider::new(&mut left_molecules, 1..=1000));
@@ -90,5 +90,6 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     state
         .tank
         .update_molecules_number(left_molecules, right_molecules);
-    state.tank.wall = wall_position;
+    state.tank.wall = 0.95 * state.tank.wall + 0.05 * wall_position;
+    state.wall = wall_position;
 }
