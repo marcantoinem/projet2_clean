@@ -110,9 +110,7 @@ impl Tank {
         }
     }
 
-    pub fn update(&mut self) {
-        self.inverse_dir_molecules();
-        self.collisions();
+    pub fn move_molecules(&mut self) {
         for mol in self.left_molecules.iter_mut() {
             mol.move_molecule();
         }
@@ -122,27 +120,29 @@ impl Tank {
         }
     }
 
+    pub fn update(&mut self) {
+        self.inverse_dir_molecules();
+        self.collisions();
+        self.move_molecules();
+    }
+
     pub fn render(&self, gfx: &mut Graphics, draw: &mut Draw) {
         draw.clear(Color::WHITE);
 
+        let twice_total = (2 * self.left_molecules.len()) as f32;
         for (i, mol) in self.left_molecules.iter().enumerate() {
+            let other_colors = i as f32 / twice_total;
             draw.circle(mol.radius)
                 .position(mol.x, mol.y)
-                .color(Color::from_rgb(
-                    1.0,
-                    i as f32 / (self.left_molecules.len() + 1000) as f32,
-                    i as f32 / (self.left_molecules.len() + 1000) as f32,
-                ));
+                .color(Color::from_rgb(1.0, other_colors, other_colors));
         }
 
+        let twice_total = (2 * self.right_molecules.len()) as f32;
         for (i, mol) in self.right_molecules.iter().enumerate() {
+            let other_colors = i as f32 / twice_total;
             draw.circle(mol.radius)
                 .position(mol.x, mol.y)
-                .color(Color::from_rgb(
-                    i as f32 / (self.right_molecules.len() + 1000) as f32,
-                    i as f32 / (self.right_molecules.len() + 1000) as f32,
-                    1.0,
-                ));
+                .color(Color::from_rgb(other_colors, other_colors, 1.0));
         }
 
         draw.line((self.wall, 0f32), (self.wall, self.height))

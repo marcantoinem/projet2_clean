@@ -28,9 +28,7 @@ fn main() -> Result<(), String> {
     let windows = WindowConfig::new()
         .title("TP2 next generation")
         .resizable(true)
-        .min_size(400, 300)
-        // .vsync(true)
-        .high_dpi(true);
+        .min_size(400, 300);
 
     notan::init_with(State::new)
         .add_config(DrawConfig)
@@ -38,7 +36,16 @@ fn main() -> Result<(), String> {
         .add_config(EguiConfig)
         .add_plugin(fps_limit)
         .draw(draw)
+        .update(update)
         .build()
+}
+
+fn update(app: &mut App) {
+    // Closes the App pressing the Escape key.
+    // On browsers the requestAnimationFrame will stop but the canvas will still be visible
+    if app.keyboard.was_pressed(KeyCode::Escape) {
+        app.exit();
+    }
 }
 
 fn draw(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
@@ -71,27 +78,34 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     let mut left_molecules = state.tank.left_molecules.len();
     let mut right_molecules = state.tank.right_molecules.len();
 
-    let right_space = gfx.size().0 / 100 * 100 - 100;
+    let right_space = (gfx.size().0 / 10 * 10 - 100) as f32;
 
     ui.label("Wall position");
-    ui.add(
-        Slider::new(
-            &mut wall_position,
-            (((gfx.size().0 - right_space) / 10 * 10) as f32)..=(right_space as f32),
-        )
-        .clamp_to_range(false)
-        .step_by(1.0),
-    );
+    ui.add(Slider::new(&mut wall_position, 100.0..=right_space));
 
     ui.label("Left molecules");
-    ui.add(Slider::new(&mut left_molecules, 1..=1000));
+    ui.add(Slider::new(&mut left_molecules, 1..=1000).logarithmic(true));
 
     ui.label("Right molecules");
-    ui.add(Slider::new(&mut right_molecules, 1..=1000));
+    ui.add(Slider::new(&mut right_molecules, 1..=1000).logarithmic(true));
 
-    state
-        .tank
-        .update_molecules_number(left_molecules, right_molecules);
+    if state.tank.wall > right_space {
+        wall_position = right_space - 10.0;
+    }
     state.tank.wall = 0.9 * state.tank.wall + 0.1 * wall_position;
     state.wall = wall_position;
+
+    if ui.add(Button::new("Reinitialize")).clicked() {
+        state.tank = Tank::new(
+            state.tank.height,
+            state.tank.width,
+            state.tank.wall,
+            right_molecules,
+            left_molecules,
+        );
+    } else {
+        state
+            .tank
+            .update_molecules_number(left_molecules, right_molecules);
+    }
 }
