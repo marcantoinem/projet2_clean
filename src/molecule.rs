@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use rand::{distributions::Uniform, prelude::Distribution, thread_rng, Rng};
 
 #[derive(PartialEq, Debug, Copy, Clone)]
@@ -7,6 +9,31 @@ pub struct Molecule {
     dx: f32,
     dy: f32,
     pub radius: f32,
+}
+
+#[derive(PartialEq, Debug, Clone)]
+pub struct MoleculeConfig {
+    pub dx_range: Range<f32>,
+    pub dy_range: Range<f32>,
+    pub radius_range: Range<f32>,
+}
+
+impl MoleculeConfig {
+    pub fn new(dx: f32, dy: f32, min_radius: f32, max_radius: f32) -> Self {
+        MoleculeConfig {
+            dx_range: (-dx..dx),
+            dy_range: (-dy..dy),
+            radius_range: (min_radius..max_radius),
+        }
+    }
+
+    pub fn default() -> Self {
+        MoleculeConfig {
+            dx_range: (-4f32..4f32),
+            dy_range: (-4f32..4f32),
+            radius_range: (5f32..10f32),
+        }
+    }
 }
 
 impl Molecule {
@@ -52,15 +79,16 @@ impl Molecule {
         height: f32,
         xmin: f32,
         xmax: f32,
-        nb_molecules: usize,
+        nb_molecule: usize,
+        conf: &MoleculeConfig,
     ) -> Vec<Molecule> {
         let mut vec_molecules = vec![];
         let mut rng = thread_rng();
-        let radius_distribution = Uniform::from(5f32..10f32);
-        let dx_distribution = Uniform::from(-4f32..4f32);
-        let dy_distribution = Uniform::from(-4f32..4f32);
+        let radius_distribution = Uniform::from(conf.radius_range.clone());
+        let dx_distribution = Uniform::from(conf.dx_range.clone());
+        let dy_distribution = Uniform::from(conf.dy_range.clone());
 
-        for _ in 0..nb_molecules {
+        for _ in 0..nb_molecule {
             let radius = radius_distribution.sample(&mut rng);
             let x = rng.gen_range((xmin + radius)..(xmax - radius));
             let y = rng.gen_range(radius..(height - radius));

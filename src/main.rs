@@ -1,6 +1,7 @@
 mod molecule;
 mod tank;
 
+use molecule::MoleculeConfig;
 use notan::draw::*;
 use notan::prelude::*;
 use notan_egui::{self, *};
@@ -11,13 +12,19 @@ use tank::Tank;
 struct State {
     wall: f32,
     tank: Tank,
+    r: MoleculeConfig,
+    l: MoleculeConfig,
 }
 
 impl State {
     fn new(gfx: &mut Graphics) -> Self {
         let wall = (gfx.size().0 / 2) as f32;
-        let tank = Tank::new(gfx.size().1 as f32, gfx.size().0 as f32, wall, 100, 200);
-        Self { wall, tank }
+        let height = gfx.size().1 as f32;
+        let width = gfx.size().0 as f32;
+        let r = MoleculeConfig::default();
+        let l = MoleculeConfig::default();
+        let tank = Tank::new(height, width, wall, 100, 200, &l, &r);
+        Self { wall, tank, r, l }
     }
 }
 
@@ -102,10 +109,15 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
             state.tank.wall,
             right_molecules,
             left_molecules,
+            &state.l,
+            &state.r,
         );
     } else {
-        state
-            .tank
-            .update_molecules_number(left_molecules, right_molecules);
+        state.tank.update_molecules_number(
+            right_molecules,
+            left_molecules,
+            &mut state.r,
+            &mut state.l,
+        );
     }
 }

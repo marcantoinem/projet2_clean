@@ -2,6 +2,7 @@ use notan::draw::*;
 use notan::prelude::*;
 
 use crate::molecule::Molecule;
+use crate::molecule::MoleculeConfig;
 
 pub struct Tank {
     pub height: f32,
@@ -14,11 +15,19 @@ pub struct Tank {
 }
 
 impl Tank {
-    pub fn new(height: f32, width: f32, wall: f32, right_nb: usize, left_nb: usize) -> Tank {
-        let left_molecules = Molecule::create_vec_molecules(height, 0f32, wall, left_nb);
-        let right_molecules = Molecule::create_vec_molecules(height, wall, width, right_nb);
-        let left_collisions = vec![0; left_nb * (left_nb - 1) / 2];
-        let right_collisions = vec![0; right_nb * (right_nb - 1) / 2];
+    pub fn new(
+        height: f32,
+        width: f32,
+        wall: f32,
+        l_nb: usize,
+        r_nb: usize,
+        l: &MoleculeConfig,
+        r: &MoleculeConfig,
+    ) -> Tank {
+        let left_molecules = Molecule::create_vec_molecules(height, 0f32, wall, l_nb, &r);
+        let right_molecules = Molecule::create_vec_molecules(height, wall, width, r_nb, &l);
+        let left_collisions = vec![0; l_nb * (l_nb - 1) / 2];
+        let right_collisions = vec![0; r_nb * (r_nb - 1) / 2];
         Tank {
             height,
             width,
@@ -74,11 +83,18 @@ impl Tank {
         }
     }
 
-    pub fn update_molecules_number(&mut self, new_left: usize, new_right: usize) {
+    pub fn update_molecules_number(
+        &mut self,
+        new_right: usize,
+        new_left: usize,
+        r: &mut MoleculeConfig,
+        l: &mut MoleculeConfig,
+    ) {
         let difference = new_left as isize - self.left_molecules.len() as isize;
         if difference > 0 {
+            let nb_molecule = difference as usize;
             let new_molecules =
-                Molecule::create_vec_molecules(self.height, 0.0, self.wall, difference as usize);
+                Molecule::create_vec_molecules(self.height, 0.0, self.wall, nb_molecule, r);
             self.left_molecules.extend(new_molecules);
             self.left_collisions =
                 vec![0; self.left_molecules.len() * (self.left_molecules.len() - 1) / 2];
@@ -92,12 +108,9 @@ impl Tank {
 
         let difference = new_right as isize - self.right_molecules.len() as isize;
         if difference > 0 {
-            let new_molecules = Molecule::create_vec_molecules(
-                self.height,
-                self.wall,
-                self.width,
-                difference as usize,
-            );
+            let nb_molecule = difference as usize;
+            let new_molecules =
+                Molecule::create_vec_molecules(self.height, self.wall, self.width, nb_molecule, l);
             self.right_molecules.extend(new_molecules);
             self.right_collisions =
                 vec![0; self.right_molecules.len() * (self.right_molecules.len() - 1) / 2];
