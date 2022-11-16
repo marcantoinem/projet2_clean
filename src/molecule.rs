@@ -47,13 +47,13 @@ impl Molecule {
         }
     }
 
-    pub fn is_molecules_touching(&self, mol: &Molecule) -> bool {
+    pub fn is_mols_touching(&self, mol: &Molecule) -> bool {
         let square_distance = (self.x - mol.x).powi(2) + (self.y - mol.y).powi(2);
         let sum_radius = self.radius + mol.radius;
         square_distance <= sum_radius.powi(2) + 5.0
     }
 
-    pub fn move_molecule(&mut self) {
+    pub fn move_mol(&mut self) {
         self.x += self.dx;
         self.y += self.dy;
     }
@@ -75,38 +75,38 @@ impl Molecule {
         mol.dy -= delta_vy;
     }
 
-    pub fn create_vec_molecules(
+    pub fn create_vec_mol(
         height: f32,
         xmin: f32,
         xmax: f32,
-        nb_molecule: usize,
+        nb_mol: usize,
         conf: &MoleculeConfig,
     ) -> Vec<Molecule> {
-        let mut vec_molecules = vec![];
+        let mut vec_mols = vec![];
         let mut rng = thread_rng();
         let radius_distribution = Uniform::from(conf.radius_range.clone());
         let dx_distribution = Uniform::from(conf.dx_range.clone());
         let dy_distribution = Uniform::from(conf.dy_range.clone());
 
-        for _ in 0..nb_molecule {
+        for _ in 0..nb_mol {
             let radius = radius_distribution.sample(&mut rng);
             let x = rng.gen_range((xmin + radius)..(xmax - radius));
             let y = rng.gen_range(radius..(height - radius));
             let dx = dx_distribution.sample(&mut rng);
             let dy = dy_distribution.sample(&mut rng);
 
-            let molecule = Molecule::new(x, y, dx, dy, radius);
-            vec_molecules.push(molecule);
+            let mol = Molecule::new(x, y, dx, dy, radius);
+            vec_mols.push(mol);
         }
-        vec_molecules
+        vec_mols
     }
 
-    pub fn inverse_dir(&mut self, left_side: f32, right_side: f32, height: f32) {
-        if self.x <= left_side + self.radius {
-            self.x = left_side + self.radius;
+    pub fn inverse_dir(&mut self, l_side: f32, r_side: f32, height: f32) {
+        if self.x <= l_side + self.radius {
+            self.x = l_side + self.radius;
             self.dx = -self.dx;
-        } else if self.x + self.radius >= right_side {
-            self.x = right_side - self.radius;
+        } else if self.x + self.radius >= r_side {
+            self.x = r_side - self.radius;
             self.dx = -self.dx;
         }
 

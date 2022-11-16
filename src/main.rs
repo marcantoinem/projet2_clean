@@ -12,8 +12,8 @@ use tank::Tank;
 struct State {
     wall: f32,
     tank: Tank,
-    r: MoleculeConfig,
     l: MoleculeConfig,
+    r: MoleculeConfig,
 }
 
 impl State {
@@ -21,8 +21,8 @@ impl State {
         let wall = (gfx.size().0 / 2) as f32;
         let height = gfx.size().1 as f32;
         let width = gfx.size().0 as f32;
-        let r = MoleculeConfig::default();
         let l = MoleculeConfig::default();
+        let r = MoleculeConfig::default();
         let tank = Tank::new(height, width, wall, 100, 200, &l, &r);
         Self { wall, tank, r, l }
     }
@@ -82,42 +82,91 @@ fn draw_egui_widget(ctx: &Context, state: &mut State, gfx: &mut Graphics) {
 
 fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     let mut wall_position = state.wall;
-    let mut left_molecules = state.tank.left_molecules.len();
-    let mut right_molecules = state.tank.right_molecules.len();
+    let mut left_molecules = state.tank.l_mol.len();
+    let mut right_molecules = state.tank.r_mol.len();
+
+    let mut l_dx = state.l.dx_range.end;
+    let mut r_dx = state.r.dx_range.end;
+
+    // Needed to keep the function from growing each frame
+    let mut l_radius_average = (state.l.radius_range.start + state.l.radius_range.end - 9.0) / 2.0;
+    let mut l_radius_variance =
+        (state.l.radius_range.end - state.l.radius_range.start - 1.0) / l_radius_average * 50.0;
+    let mut r_radius_average = (state.r.radius_range.start + state.r.radius_range.end - 9.0) / 2.0;
+    let mut r_radius_variance =
+        (state.r.radius_range.end - state.r.radius_range.start - 1.0) / r_radius_average * 50.0;
 
     let right_space = (gfx.size().0 / 10 * 10 - 100) as f32;
 
     ui.label("Wall position");
     ui.add(Slider::new(&mut wall_position, 100.0..=right_space));
 
-    ui.label("Left molecules");
-    ui.add(Slider::new(&mut left_molecules, 1..=1000).logarithmic(true));
+    Grid::new("grid").show(ui, |ui| {
+        ui.label("Left molecules number");
+        ui.label("Right molecules number");
+        ui.end_row();
 
-    ui.label("Right molecules");
-    ui.add(Slider::new(&mut right_molecules, 1..=1000).logarithmic(true));
+        ui.add(Slider::new(&mut left_molecules, 1..=1000).logarithmic(true));
+        ui.add(Slider::new(&mut right_molecules, 1..=1000).logarithmic(true));
+        ui.end_row();
+    });
+    ui.collapsing("Advanced settings for new molecules", |ui| {
+        Grid::new("grid2").show(ui, |ui| {
+            ui.label("Left speed");
+            ui.label("Right speed");
+            ui.end_row();
+
+            ui.add(Slider::new(&mut l_dx, 1f32..=8f32));
+            ui.add(Slider::new(&mut r_dx, 1f32..=8f32));
+            ui.end_row();
+
+            ui.label("Left average radius");
+            ui.label("Right average radius");
+            ui.end_row();
+
+            ui.add(Slider::new(&mut l_radius_average, 4f32..=20f32));
+            ui.add(Slider::new(&mut r_radius_average, 4f32..=20f32));
+            ui.end_row();
+
+            ui.label("Left radius variance");
+            ui.label("Right radius variance");
+            ui.end_row();
+
+            ui.add(Slider::new(&mut l_radius_variance, 0f32..=100f32).suffix("%"));
+            ui.add(Slider::new(&mut r_radius_variance, 0f32..=100f32).suffix("%"));
+            ui.end_row();
+        });
+    });
 
     if state.tank.wall > right_space {
         wall_position = right_space - 10.0;
     }
+
     state.tank.wall = 0.9 * state.tank.wall + 0.1 * wall_position;
     state.wall = wall_position;
+
+    // Avoid having excessively small particle and equal start and end.
+    let min_radius = (1.0 - l_radius_variance / 100.0) * l_radius_average + 4.0;
+    let max_radius = (1.0 + l_radius_variance / 100.0) * l_radius_average + 5.0;
+    state.l = MoleculeConfig::new(l_dx, l_dx, min_radius, max_radius);
+
+    let min_radius = (1.0 - r_radius_variance / 100.0) * r_radius_average + 4.0;
+    let max_radius = (1.0 + r_radius_variance / 100.0) * r_radius_average + 5.0;
+    state.r = MoleculeConfig::new(r_dx, r_dx, min_radius, max_radius);
 
     if ui.add(Button::new("Reinitialize")).clicked() {
         state.tank = Tank::new(
             state.tank.height,
             state.tank.width,
             state.tank.wall,
-            right_molecules,
             left_molecules,
+            right_molecules,
             &state.l,
             &state.r,
         );
     } else {
-        state.tank.update_molecules_number(
-            right_molecules,
-            left_molecules,
-            &mut state.r,
-            &mut state.l,
-        );
+        state
+            .tank
+            .update_mol_number(left_molecules, right_molecules, &state.l, &state.r);
     }
 }
