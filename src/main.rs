@@ -77,6 +77,7 @@ fn draw(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
 fn draw_egui_widget(ctx: &Context, state: &mut State, gfx: &mut Graphics) {
     Window::new("Simulation parameters")
         .default_width(400.0)
+        .resizable(false)
         .show(ctx, |ui| draw_egui_ui(ui, state, gfx));
 }
 
@@ -110,6 +111,7 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
         ui.add(Slider::new(&mut right_molecules, 1..=1000).logarithmic(true));
         ui.end_row();
     });
+    let mut default = false;
     ui.collapsing("Advanced settings for new molecules", |ui| {
         Grid::new("grid2").show(ui, |ui| {
             ui.label("Left speed");
@@ -135,6 +137,8 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
             ui.add(Slider::new(&mut l_radius_variance, 0f32..=100f32).suffix("%"));
             ui.add(Slider::new(&mut r_radius_variance, 0f32..=100f32).suffix("%"));
             ui.end_row();
+
+            default = ui.add(Button::new("Default")).clicked();
         });
     });
 
@@ -145,14 +149,19 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     state.tank.wall = 0.9 * state.tank.wall + 0.1 * wall_position;
     state.wall = wall_position;
 
-    // Avoid having excessively small particle and equal start and end.
-    let min_radius = (1.0 - l_radius_variance / 100.0) * l_radius_average + 4.0;
-    let max_radius = (1.0 + l_radius_variance / 100.0) * l_radius_average + 5.0;
-    state.l = MoleculeConfig::new(l_dx, l_dx, min_radius, max_radius);
+    if default {
+        state.l = MoleculeConfig::default();
+        state.r = MoleculeConfig::default();
+    } else {
+        // Avoid having excessively small particle and equal start and end.
+        let min_radius = (1.0 - l_radius_variance / 100.0) * l_radius_average + 4.0;
+        let max_radius = (1.0 + l_radius_variance / 100.0) * l_radius_average + 5.0;
+        state.l = MoleculeConfig::new(l_dx, l_dx, min_radius, max_radius);
 
-    let min_radius = (1.0 - r_radius_variance / 100.0) * r_radius_average + 4.0;
-    let max_radius = (1.0 + r_radius_variance / 100.0) * r_radius_average + 5.0;
-    state.r = MoleculeConfig::new(r_dx, r_dx, min_radius, max_radius);
+        let min_radius = (1.0 - r_radius_variance / 100.0) * r_radius_average + 4.0;
+        let max_radius = (1.0 + r_radius_variance / 100.0) * r_radius_average + 5.0;
+        state.r = MoleculeConfig::new(r_dx, r_dx, min_radius, max_radius);
+    }
 
     if ui.add(Button::new("Reinitialize")).clicked() {
         state.tank = Tank::new(
