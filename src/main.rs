@@ -112,6 +112,8 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
         ui.end_row();
     });
     let mut default = false;
+    let mut reinitialize = false;
+
     ui.collapsing("Advanced settings for new molecules", |ui| {
         Grid::new("grid2").show(ui, |ui| {
             ui.label("Left speed");
@@ -138,7 +140,10 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
             ui.add(Slider::new(&mut r_radius_variance, 0f32..=100f32).suffix("%"));
             ui.end_row();
 
-            default = ui.add(Button::new("Default")).clicked();
+            ui.horizontal(|ui| {
+                default = ui.add(Button::new("Default")).clicked();
+                reinitialize = ui.add(Button::new("Reinitialize")).clicked();
+            });
         });
     });
 
@@ -163,7 +168,7 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
         state.r = MoleculeConfig::new(r_dx, r_dx, min_radius, max_radius);
     }
 
-    if ui.add(Button::new("Reinitialize")).clicked() {
+    if reinitialize {
         state.tank = Tank::new(
             state.tank.height,
             state.tank.width,
