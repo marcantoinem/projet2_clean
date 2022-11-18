@@ -24,8 +24,8 @@ impl Tank {
         l: &MoleculeConfig,
         r: &MoleculeConfig,
     ) -> Tank {
-        let l_mol = Molecule::create_vec_mol(height, 0f32, wall, l_nb, &l);
-        let r_mol = Molecule::create_vec_mol(height, wall, width, r_nb, &r);
+        let l_mol = Molecule::create_vec_mol(height, 0f32, wall, l_nb, l);
+        let r_mol = Molecule::create_vec_mol(height, wall, width, r_nb, r);
         let l_collisions = vec![0; l_nb * (l_nb - 1) / 2];
         let r_collisions = vec![0; r_nb * (r_nb - 1) / 2];
         Tank {
@@ -49,7 +49,7 @@ impl Tank {
                 let contact = mol_1.is_mols_touching(mol_2);
                 if contact && self.l_collisions[k] == 0 {
                     mol_1.adjust_dir_after_collision(mol_2);
-                    self.l_collisions[k] = 2;
+                    self.l_collisions[k] = 3;
                 } else if !contact && self.l_collisions[k] > 0 {
                     self.l_collisions[k] -= 1;
                 }
@@ -65,7 +65,7 @@ impl Tank {
                 let contact = mol_1.is_mols_touching(mol_2);
                 if contact && self.r_collisions[k] == 0 {
                     mol_1.adjust_dir_after_collision(mol_2);
-                    self.r_collisions[k] = 5;
+                    self.r_collisions[k] = 3;
                 } else if !contact && self.r_collisions[k] > 0 {
                     self.r_collisions[k] -= 1;
                 }

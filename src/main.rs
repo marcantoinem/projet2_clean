@@ -55,10 +55,10 @@ fn update(app: &mut App) {
     }
 }
 
-fn draw(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
+fn draw(app: &mut App, gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
     let interface = plugins.egui(|ctx| {
         // Draw the EGUI Widget here
-        draw_egui_widget(ctx, state, gfx);
+        draw_egui_widget(app, ctx, state, gfx);
     });
 
     state.tank.width = gfx.size().0 as f32;
@@ -74,20 +74,22 @@ fn draw(gfx: &mut Graphics, plugins: &mut Plugins, state: &mut State) {
 }
 
 // Creates a widget to change the properties
-fn draw_egui_widget(ctx: &Context, state: &mut State, gfx: &mut Graphics) {
+fn draw_egui_widget(app: &mut App, ctx: &Context, state: &mut State, gfx: &mut Graphics) {
     Window::new("Simulation parameters")
         .default_width(400.0)
         .resizable(false)
-        .show(ctx, |ui| draw_egui_ui(ui, state, gfx));
+        .show(ctx, |ui| draw_egui_ui(app, ui, state, gfx));
 }
 
-fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
+fn draw_egui_ui(app: &mut App, ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
     let mut wall_position = state.wall;
     let mut left_molecules = state.tank.l_mol.len();
     let mut right_molecules = state.tank.r_mol.len();
 
     let mut l_dx = state.l.dx_range.end;
     let mut r_dx = state.r.dx_range.end;
+
+    let fps = app.timer.fps().round();
 
     // Needed to keep the function from growing each frame
     let mut l_radius_average = (state.l.radius_range.start + state.l.radius_range.end - 9.0) / 2.0;
@@ -107,8 +109,8 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
         ui.label("Right molecules number");
         ui.end_row();
 
-        ui.add(Slider::new(&mut left_molecules, 1..=1000).logarithmic(true));
-        ui.add(Slider::new(&mut right_molecules, 1..=1000).logarithmic(true));
+        ui.add(Slider::new(&mut left_molecules, 1..=1420).logarithmic(true));
+        ui.add(Slider::new(&mut right_molecules, 1..=1420).logarithmic(true));
         ui.end_row();
     });
     let mut default = false;
@@ -128,8 +130,8 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
             ui.label("Right average radius");
             ui.end_row();
 
-            ui.add(Slider::new(&mut l_radius_average, 4f32..=20f32));
-            ui.add(Slider::new(&mut r_radius_average, 4f32..=20f32));
+            ui.add(Slider::new(&mut l_radius_average, 1f32..=20f32));
+            ui.add(Slider::new(&mut r_radius_average, 1f32..=20f32));
             ui.end_row();
 
             ui.label("Left radius variance");
@@ -146,6 +148,7 @@ fn draw_egui_ui(ui: &mut Ui, state: &mut State, gfx: &mut Graphics) {
             });
         });
     });
+    ui.label(format!("fps: {}", fps));
 
     if state.tank.wall > right_space {
         wall_position = right_space - 10.0;
