@@ -10,6 +10,12 @@ strip = true
 
 [dependencies]
 rand = "0.8.5"
-notan = "0.7.1"
-notan_extra = "0.7.1"
-notan_egui = "0.7.1"
+bevy = { version = "0.9.0", features = ["dynamic"] }
+
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3

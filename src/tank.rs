@@ -1,6 +1,3 @@
-use notan::draw::*;
-use notan::prelude::*;
-
 use crate::molecule::Molecule;
 use crate::molecule::MoleculeConfig;
 
@@ -134,29 +131,5 @@ impl Tank {
         self.move_mol();
     }
 
-    pub fn render(&self, gfx: &mut Graphics, draw: &mut Draw) {
-        draw.clear(Color::WHITE);
-
-        let twice_total = (2 * self.l_mol.len()) as f32;
-        for (i, mol) in self.l_mol.iter().enumerate() {
-            let other_colors = i as f32 / twice_total;
-            draw.circle(mol.radius)
-                .position(mol.x, mol.y)
-                .color(Color::from_rgb(1.0, other_colors, other_colors));
-        }
-
-        let twice_total = (2 * self.r_mol.len()) as f32;
-        for (i, mol) in self.r_mol.iter().enumerate() {
-            let other_colors = i as f32 / twice_total;
-            draw.circle(mol.radius)
-                .position(mol.x, mol.y)
-                .color(Color::from_rgb(other_colors, other_colors, 1.0));
-        }
-
-        draw.line((self.wall, 0f32), (self.wall, self.height))
-            .color(Color::BLUE)
-            .width(5f32);
-
-        gfx.render(draw);
-    }
+    pub fn render(&self) {}
 }
